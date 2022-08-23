@@ -2,7 +2,7 @@
 
 * [Getting Started](#getting-started)
 * [Variables](#variables)
-* [Pointers] (#pointers)
+* [Pointers](#pointers)
 
 ## Getting Started
 
