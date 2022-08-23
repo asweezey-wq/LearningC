@@ -2,6 +2,7 @@
 
 * [Getting Started](#getting-started)
 * [Variables](#variables)
+* [Pointers] (#pointers)
 
 ## Getting Started
 
@@ -94,7 +95,7 @@ int myNums[] = {1,2,3,4};
 
 **Know that this array initialization only applies when declaring an array for the first time! You cannot use this on an existing array to redefine its elements!**
 
-#### Pointers
+#### Pointer Types
 
 Pointers are the heart of C. A pointer, simply put, is a reference to another variable or value. We will discuss this topic more when we get to how memory works, but for now we will just go over how to declare a pointer. 
 
@@ -176,4 +177,109 @@ That's pretty simple. Now we have a struct as a template for whenever we want to
 struct BankAccount bankAccounts[1000];
 ```
 --A
-Now we have an array containing 1000 bank accounts, and each one we can access its `accountId` and `accountBalance`. We will get into how to use these things later, but it is important to understand how the types work. 
+Now we have an array containing 1000 bank accounts, and each one we can access its `accountId` and `accountBalance`. We will get into how to use these things later, but it is important to understand how the types work.
+
+## Pointers
+
+Pointers are at the heart of programming, and they allow you as the programmer to have control over the memory that you are using. 
+
+### How does Memory Work?
+
+Almost every variable that you use is stored somewhere in memory. The computer has to have somewhere to get the data from before operating on it. For example, if we make an array of 1000 bank accounts, those are stored in a large section of your computer's memory. When you want to access a particular bank account from that array, the computer fetches the data from that section of memory. That leads us to the question: _How does the computer know where in memory to get the data?_
+
+### The Concept of a Pointer
+
+Because we know that we have stored data in memory, now we have to be able to reference it. Each memory location has an address that uniquely identifies that section of memory for your computer. These addresses are organized by bytes, so each byte has a unique address. Knowing these, we can see that each byte in memory has two values associated with it: its value and its address. We can imagine these as mailboxes.
+
+Say you are in a mail room with several numbered mailboxes. Each mailbox's number uniquely identifies that mailbox, and each mailbox holds a different package. You know that your package is stored in mailbox 11, so you go and open up that mailbox and get your package. This is very similar to what is happening inside your computer. The number of the mailbox is the address of that part of memory, and the package represents the value inside that mailbox. 
+
+### Pointer Types (cont.)
+
+Earlier we discussed pointer types. Each pointer is a reference to a memory address, but the type must contain what we are pointing to. This is because different types have different sizes. A `char` takes only 1 byte, but an `int` takes 4 bytes. So if we have a pointer to a `char`, that points to a single byte in memory. Conversely if we have a pointer to an `int`, it points to a contiguous 4 byte section of memory where that `int` is stored. The compiler has to know how big of an area of memory your pointer is pointing to.
+
+### Using Pointers
+
+Now it's time to actually put pointers to use.
+
+#### Allocating Memory
+
+If we want to use memory, we will have to first allocate it. This means that we reserve a certain section of memory for our program where we can store our data. We can do this as many times as we want, with however big sections that we want until the computer runs out of memory. Because of certain practical and security reasons, the computer does not allow you to access whatever memory you want, and allocation is a way to get your own section of memory.
+
+This is done by using the standard library function `malloc`. The argument to malloc is the how much memory we want to allocate, in bytes. `malloc` returns a pointer that points to the beginning of this section. 
+```C
+char *myPointer = malloc(1024);
+```
+The above code is a simple line of code that allocates 1024 bytes, then stores the pointer to this section in the `myPointer` variable. An important note here-malloc doesn't require a certain pointer type. We have a 1024 byte area of memory, and it's up to us how we want to section that. The most basic pointer is a `char*` because it simply points to a single byte in memory. However, usually the reason for which we are allocating memory dictates what type we want to point to. 
+
+#### Getting the Address of Variables
+
+Like I said earlier, the variables that you declare are also in memory. Just like any other value, they have an address that uniquely identifies that value's location in memory. We can get this using the `&` operator. The `&` operator is applied to a variable in C, and it provides us with a pointer to that object (note: the pointer to this object _does_ have a specific type. Because we are getting the address of a specific type, it must be a pointer to that type. Using `&` on an `int` will always provide an `int*`).
+```C
+float f = 1.2;
+float *pointerToF = &f;
+```
+The above code shows that, given a variable `f`, we can use the `&` operator to get a pointer to `f`. We know that since `f` is a `float`, it is a 4 byte value containing the number `1.2`. Our variable `pointerToF` is simply holds the address of that 4 byte area in memory containing `1.2`. 
+
+Going back to our mailbox analogy, this operator gives us the mailbox number. Say there is a package that we know is in one of the mailboxes, but we aren't sure where. If we can get the mailbox number (the address), now we know _where_ the package is stored. 
+
+#### Dereferencing
+
+Now, a pointer stores the address of the value it points to. So if we were to print the pointer, we would get a large number (which is in fact a memory address). So great- we have a variable that stores a memory address. That isn't much use to us unless we can access the value at that address in memory. Going back to our mailbox analogy, if a pointer is simply the mailbox number, it isn't much use if we can't get the package out of the mailbox at that number. Dereferencing a pointer is the concept of accessing the value that is pointed at by the pointer. Dereferencing is getting the package out of the mailbox with a given number. We can take a pointer to a type and get the object at that location in memory. For example, if we dereference an `int*`, it will give us an `int`. This is done using the `*` operator before the address (this is different than the `*` used in the type declaration; they are the same character but are not related).
+```C
+int myVar = 64;
+int *pointerToMyVar = &myVar;
+int dereferencedValue = *pointerToMyVar;
+```
+The above code declares an `int` that holds the value 64, and gets a pointer to that variable. We use the `*` in the third line to dereference this pointer, and store the actual value being pointed at into a third variable. What the computer does here is gets the value of `pointerToMyVar` (which is the address of `myVar`). It then looks up that address in memory, and accesses those 4 bytes (4 bytes because it is an `int*`). We know that `64` was stored in that section of memory to begin with, so when the computer looks up that address in memory, it fetches the value 64, like we expected. Therefore `dereferencedValue` also stores 64. 
+
+Now- a quick note: because we declared a new variable `dereferencedValue`, that means that variable is stored in a different memory location from `myVar`. So they are two different variables that contain the same value, `64`. Dereferencing fetches the value then stores it in the new variable; there is no connection now between `dereferencedValue` and `myVar`. 
+
+#### Pointers to Structs
+
+Using pointers in combination with structs is one of the powers of C. If we have a pointer to a struct, it is no different than a pointer to any other type. It is simply the address of that struct object in memory. Lets bring back our bank account example from before.
+```C
+struct BankAccount {
+  int accountId;
+  float accountBalance;
+};
+```
+We have our BankAccount struct that is 8 bytes long (4 bytes for an `int` and 4 bytes for a `float`). So if we had a pointer to this:
+```C
+struct BankAccount *bankAccountPtr;
+```
+It contains the address of an 8 byte section of memory containing an `accountId` and `accountBalance`. 
+
+If we want to access the members of this struct we have two options. We'll start with the naive option.
+```C
+struct BankAccount dereferencedAccount = *bankAccountPtr;
+```
+This simply dereferences the struct and stores it in a new variable called `dereferencedAccount`. This is fairly intuitive, and it does what we want it to do: we can access the values of this struct by accessing the `accountId` and `accountBalance` of `dereferencedAccount`. However this can get problematic when we have much larger structs where we only need to access a few values in that struct. We don't want to make space for a whole new dereferenced struct of that type, so we can use a method to get those values from the pointer directly. 
+
+```C
+int myId = bankAccountPtr->accountId;
+```
+Using the `->` instead of the `.` operator, we can access members of the struct pointer like we access members of a struct. When we use the `->` operator, the computer looks up that struct in memory (using the address in the pointer), finds that member's value in the struct (in this case, it fetches the appropriate 4 byte `int` inside our struct), then provides that value back to the program (in this case, storing it in a new variable `myId`). 
+
+Not only is this more convenient than dereferencing the full struct, we can also use this to _set_ the member values.
+```C
+bankAccountPtr->accountBalance = 100.0;
+```
+This is actually storing the value `100.0` into this struct in memory. Again using the address in `bankAccountPtr`, the computer stores this value into the correct memory location so that this struct's `accountBalance` now contains the value `100.0`.
+
+*Important*: we cannot set values of a dereferenced struct. This makes sense when you stop to think about what the computer is actually doing when you dereference a struct. When we do 
+```C
+struct BankAccount dereferencedAccount = *bankAccountPtr;
+```
+We are accessing the struct from memory, and copying it into a new variable `dereferencedAccount`. This new variable is entirely separate from the pointed-to value, and thus is at a different location in memory. So if I were to do
+```C
+dereferencedAccount.accountBalance = 100.0;
+```
+It would set the `accountBalance` for `dereferencedAccount`, but would have no effect on the value pointed to by `bankAccountPtr`. 
+
+#### Pointer Arithmetic
+
+TODO
+
+#### Why Pointers?
+
+Pointers allow us as the programmer to have fine-grained control over the memory that we are using. But you may be wondering why they are useful. In these examples so far, we haven't really seen a need for pointers. They start to get quite useful once we start using functions and our program gets bigger. We want to be able to use certain important values in multiple places throughout our program. If multiple functions in our program can reference the same value in memory, it greatly expands what we can do with that value and what we can do with our program on a larger scale. 
